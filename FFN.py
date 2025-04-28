@@ -8,7 +8,7 @@ class FFN(nn.Module):
        
        d_input (int): size of embeddings
        
-       d_output (int): should be the same as d_input for a decoder transformer
+       d_output (int): should be the same as d_input for a encoder transformer
        
        num_hidden_layers (int) OPTIONAL : number of hidden layers in feedforward network
        
