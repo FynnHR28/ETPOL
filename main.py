@@ -15,12 +15,12 @@ if __name__ in '__main__':
     
     """Model & training hyper parameters"""
     context_length = 512
-    d_model = 512
+    d_model = 256
     num_heads = 8
     num_hidden_layers = 2
     d_hidden = 2048
-    num_encoders = 8
-    num_epochs = 2
+    num_encoders = 3
+    num_epochs = 8
 
     lr = 2e-4
     batch_size = 16
