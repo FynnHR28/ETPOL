@@ -1,28 +1,42 @@
 import torch
+import random
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from transformers import PreTrainedTokenizerFast
 from models import ETPOL
 import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, HalvingRandomSearchCV
 from PostsDataset import PostsDataset
 from test_utils import train, save_results
+import numpy as np
+
 
 
 
 if __name__ in '__main__':
     
-    """Model & training hyper parameters"""
-    context_length = 512
-    d_model = 512
-    num_heads = 8
-    num_hidden_layers = 2
-    d_hidden = 2048
-    num_encoders = 8
-    num_epochs = 2
+    seed = 121
+    random.seed(seed)  # Set Python's random seed
+    np.random.seed(seed)  # Set NumPy's random seed
+    torch.manual_seed(seed)  # Set PyTorch's CPU random seed
+    torch.cuda.manual_seed(seed)  # Set PyTorch's GPU random seed (if using CUDA)
+    torch.cuda.manual_seed_all(seed)  # For all GPUs if you have multiple
 
-    lr = 2e-4
+    
+    """Model & training hyper parameters"""
+    
+    context_length = 512
+    d_model = 128
+    num_heads = 4
+    num_hidden_layers = 4
+    d_hidden = 512
+    num_encoders = 4
+    num_epochs = 10
+    mod_name = 'mod_7'
+
+    lr = 2e-5
+    pdrop = 0.5
     batch_size = 16
     
     model = ETPOL(
@@ -32,7 +46,8 @@ if __name__ in '__main__':
         d_hidden=d_hidden,
         num_hidden_layers=num_hidden_layers,
         num_heads=num_heads,
-        num_encoders=num_encoders   
+        num_encoders=num_encoders,
+        pdrop=pdrop 
     )
 
     model_hyperparams = {
@@ -41,14 +56,18 @@ if __name__ in '__main__':
         'num_heads': num_heads,
         'num_hidden_layers': num_hidden_layers,
         'd_hidden': d_hidden,
-        'num_encoders': num_encoders,   
+        'num_encoders': num_encoders, 
+        'lr': lr,
+        'dropout': pdrop,
+        'batch_size': batch_size,
+        'num_epochs': num_epochs
     }
     
     model_hyperparams_str = '\n'.join(f'{k}: {v}' for k, v in model_hyperparams.items())
-
+    print(model_hyperparams_str)
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
+    print(f"device: {device}")
     # good for binary classification
     loss_fn = nn.CrossEntropyLoss()
 
@@ -57,7 +76,6 @@ if __name__ in '__main__':
 
     print('loading df..')
     df=pd.read_csv(Path('data/all_posts.csv'))
-    df = df[:32]
 
     print('splitting into train and test sets')
     train_df, temp = train_test_split(df, test_size=0.3, stratify=df['affiliation'])
@@ -75,6 +93,7 @@ if __name__ in '__main__':
     
     results = train(
         model=model,
+        mod_name=mod_name,
         train_dataloader=train_dataloader,
         val_dataloader=val_dataloader,
         test_dataloader=test_dataloader,
@@ -84,6 +103,6 @@ if __name__ in '__main__':
         loss_fn=loss_fn
     )
     
-    save_results(results, model_hyperparams_str, 'test_1')
+    save_results(results, model_hyperparams_str, mod_name)
                     
                     

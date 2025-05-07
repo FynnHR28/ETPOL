@@ -5,6 +5,7 @@ from transformers import get_scheduler
 from tqdm.auto import tqdm
 import evaluate
 from sklearn.metrics import f1_score, precision_score, recall_score
+import numpy as np
 
 
 def update_results(results, f1, acc, loss, prec, recall, test_type):
@@ -64,14 +65,12 @@ def evaluate_model(model, dataloader, device, loss_fn):
         labels = labels.view(-1).detach().cpu().numpy()  # Shape: [batch_size * seq_len]
 
         metric.add_batch(predictions=predictions, references=labels)
-        print(predictions)
-        print(labels)
     # average = 'micro' uses a global count of the total TPs, FNs and FPs.
     avg_loss = total_loss / len(dataloader)
     f1 = f1_score(y_true=labels, y_pred=predictions, average='micro')
     
-    prec = precision_score(y_true=labels, y_pred=predictions)
-    recall = recall_score(y_true=labels, y_pred=predictions)
+    prec = precision_score(y_true=labels, y_pred=predictions, average='micro')
+    recall = recall_score(y_true=labels, y_pred=predictions, average='micro')
     
     acc = metric.compute()
     
@@ -79,12 +78,12 @@ def evaluate_model(model, dataloader, device, loss_fn):
 
   
 
-def train(model, train_dataloader, val_dataloader, 
+def train(model, mod_name, train_dataloader, val_dataloader, 
           test_dataloader, num_epochs, 
           lr, device, loss_fn):
     # advanced optimizer for how to update model weights
     # often results in better generalization than SGD
-    optimizer = AdamW(model.parameters(), lr=lr)
+    optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
 
     results = {
         'f1_train': [],
@@ -132,7 +131,7 @@ def train(model, train_dataloader, val_dataloader,
             logits = model(input_ids)
             
             loss = loss_fn(logits, labels)
-            epoch_loss.append(loss)
+            epoch_loss.append(loss.detach().cpu().numpy())
             
             loss.backward()
 
@@ -141,20 +140,21 @@ def train(model, train_dataloader, val_dataloader,
             optimizer.zero_grad()
         
         
-        avg_train_loss = torch.stack(epoch_loss).mean()
+        avg_train_loss = np.mean(epoch_loss)
         # f1, acc, avg_loss, prec, recall in that order
         f1_train, acc_train, _, prec_train, recall_train = evaluate_model(model, train_dataloader, device, loss_fn)
         results = update_results(results, f1_train, acc_train, avg_train_loss, prec_train, recall_train, 'train')
         
         f1_val, acc_val, loss_val, prec_val, recall_val = evaluate_model(model, val_dataloader, device, loss_fn)
         results = update_results(results, f1_val, acc_val, loss_val, prec_val, recall_val, 'val')
+        print(results)
 
 
 
     f1_test, acc_test, loss_test, prec_test, recall_test = evaluate_model(model, test_dataloader, device, loss_fn)
 
     results = update_results(results, f1_test, acc_test, loss_test, prec_test, recall_test, 'test')
-    
+    torch.save(model.state_dict(), 'models/' + mod_name + '.pth')
     return results
     
     

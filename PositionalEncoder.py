@@ -11,15 +11,11 @@ class PositionalEncoder(nn.Module):
         context length (int): the max number of tokens the model can process at once
         
         d_model (int): length of a token's embedding vector, referred to generally as the 'model dimension'
-        
-        pdrop, float (Optional): probability of zeroing out an input, default to 0.1
     """
-    def __init__(self, context_len, d_model, pdrop=0.1):
+    def __init__(self, context_len, d_model):
         super(PositionalEncoder, self).__init__()
         # encode each position (context_len) with d_model dimensions
         self.pe = torch.zeros(context_len, d_model) # shape: (context_len x d_model) 
-        
-        self.dropout = nn.Dropout(p=pdrop)
         
         # create a tensor holding every possible position in the input sequence
         position = torch.arange(0, context_len, dtype=torch.float).unsqueeze(1) # shape: (context_len x 1)
@@ -45,5 +41,4 @@ class PositionalEncoder(nn.Module):
         self.pe = self.pe.to(x.device)
         x = x + (self.pe[:, :x.shape[1], :]) 
         
-        # apply dropout to help with overfitting and return
-        return self.dropout(x)
+        return x

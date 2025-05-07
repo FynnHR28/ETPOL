@@ -38,3 +38,4 @@ class FFN(nn.Module):
     def forward(self, x):
         # just pass it through.
         return self.ffn(x)
+    
