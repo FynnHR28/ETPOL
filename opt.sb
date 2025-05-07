@@ -1,0 +1,10 @@
+#! /bin/sh
+#SBATCH --partition gpu-a100-q
+#SBATCH --gres=gpu:1
+#SBATCH --mem=80G
+#SBATCH --output dgpu-%j-opt.out
+#SBATCH --error dgpu-%j-opt.err
+
+source ~/venv/ETPOL/bin/activate
+srun python3 opt.py
+wait

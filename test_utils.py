@@ -78,9 +78,8 @@ def evaluate_model(model, dataloader, device, loss_fn):
 
   
 
-def train(model, mod_name, train_dataloader, val_dataloader, 
-          test_dataloader, num_epochs, 
-          lr, device, loss_fn):
+def train(model, train_dataloader, val_dataloader, num_epochs, 
+          lr, device, loss_fn, mod_name, save_model):
     # advanced optimizer for how to update model weights
     # often results in better generalization than SGD
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
@@ -117,8 +116,10 @@ def train(model, mod_name, train_dataloader, val_dataloader,
     )
     
     model.to(device)
-    print('starting training')
+     
     model.train()
+    best_val_loss = float('inf')
+    patience = 0
     for epoch in range(num_epochs):
         print(f"EPOCH {epoch}")
         epoch_loss = []
@@ -131,7 +132,7 @@ def train(model, mod_name, train_dataloader, val_dataloader,
             logits = model(input_ids)
             
             loss = loss_fn(logits, labels)
-            epoch_loss.append(loss.detach().cpu().numpy())
+            epoch_loss.append(loss.detach() )
             
             loss.backward()
 
@@ -140,21 +141,28 @@ def train(model, mod_name, train_dataloader, val_dataloader,
             optimizer.zero_grad()
         
         
-        avg_train_loss = np.mean(epoch_loss)
+        avg_train_loss = np.mean([loss.cpu().item() for loss in epoch_loss])
         # f1, acc, avg_loss, prec, recall in that order
         f1_train, acc_train, _, prec_train, recall_train = evaluate_model(model, train_dataloader, device, loss_fn)
         results = update_results(results, f1_train, acc_train, avg_train_loss, prec_train, recall_train, 'train')
         
         f1_val, acc_val, loss_val, prec_val, recall_val = evaluate_model(model, val_dataloader, device, loss_fn)
+        
+        if loss_val > best_val_loss:
+            patience += 1
+            print('stopping training early! (val loss got worse twice in a row)')
+            if patience > 1: break
+        else:
+            best_val_loss = loss_val
+            patience = 0
+        
         results = update_results(results, f1_val, acc_val, loss_val, prec_val, recall_val, 'val')
+        
         print(results)
 
-
-
-    f1_test, acc_test, loss_test, prec_test, recall_test = evaluate_model(model, test_dataloader, device, loss_fn)
-
-    results = update_results(results, f1_test, acc_test, loss_test, prec_test, recall_test, 'test')
-    torch.save(model.state_dict(), 'models/' + mod_name + '.pth')
+    if save_model:
+        torch.save(model.state_dict(), 'models/' + mod_name + '.pth')
+    
     return results
     
     

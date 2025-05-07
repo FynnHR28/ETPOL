@@ -6,9 +6,9 @@ from transformers import PreTrainedTokenizerFast
 from models import ETPOL
 import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split, HalvingRandomSearchCV
+from sklearn.model_selection import train_test_split  
 from PostsDataset import PostsDataset
-from test_utils import train, save_results
+from test_utils import train, save_results, update_results, evaluate_model
 import numpy as np
 
 
@@ -94,15 +94,18 @@ if __name__ in '__main__':
     results = train(
         model=model,
         mod_name=mod_name,
+        save_model=True,
         train_dataloader=train_dataloader,
-        val_dataloader=val_dataloader,
-        test_dataloader=test_dataloader,
+        val_dataloader=val_dataloader,         
         num_epochs=num_epochs,
         lr=lr,
         device=device,
         loss_fn=loss_fn
     )
     
+    # evaluate on test dataset
+    f1_test, acc_test, loss_test, prec_test, recall_test = evaluate_model(model, test_dataloader, device, loss_fn)
+
+    results = update_results(results, f1_test, acc_test, loss_test, prec_test, recall_test, 'test')
+    
     save_results(results, model_hyperparams_str, mod_name)
-                    
-                    
