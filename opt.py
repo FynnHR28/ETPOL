@@ -121,8 +121,8 @@ def objective(trial):
 
 
 print("STARTING STUDY")
-study = optuna.create_study(study_name = 'ETPOL hyperparameter optimization')
-study.optimize(objective, n_trials=20, direction="maximize")
+study = optuna.create_study(study_name = 'ETPOL hyperparameter optimization', direction="maximize")
+study.optimize(objective, n_trials=20)
 print("Best trial:")
 best_trial = study.best_trial
 
