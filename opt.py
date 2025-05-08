@@ -47,9 +47,9 @@ val_dataset = PostsDataset(df=val_df, tokenizer=tokenizer, context_length=contex
 
 def objective(trial):
     print("NEXT TRIAL")
-    num_epochs = 4
+    num_epochs = 6
     context_length = 512
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
     
      
     batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
@@ -122,7 +122,7 @@ def objective(trial):
 
 print("STARTING STUDY")
 study = optuna.create_study(study_name = 'ETPOL hyperparameter optimization')
-study.optimize(objective, n_trials=10, direction="maximize")
+study.optimize(objective, n_trials=20, direction="maximize")
 print("Best trial:")
 best_trial = study.best_trial
 
