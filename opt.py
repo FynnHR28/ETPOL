@@ -11,6 +11,7 @@ from PostsDataset import PostsDataset
 from test_utils import train 
 import numpy as np
 import optuna
+from datetime import date, datetime
 
 
 seed = 121
@@ -47,6 +48,7 @@ val_dataset = PostsDataset(df=val_df, tokenizer=tokenizer, context_length=contex
 
 def objective(trial):
     print("NEXT TRIAL")
+    start_time = datetime.now()
     num_epochs = 6
     context_length = 512
     loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
@@ -114,7 +116,7 @@ def objective(trial):
     # Log additional metrics for analysis
     trial.set_user_attr("val_loss", val_loss)
     trial.set_user_attr("val_acc", val_acc)
-    
+    print(f'TRIAL TOOK: {datetime.now() - start_time}')
     return val_acc
 
 
