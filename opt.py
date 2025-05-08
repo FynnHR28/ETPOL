@@ -18,12 +18,12 @@ seed = 121
 random.seed(seed)  # Set Python's random seed
 np.random.seed(seed)  # Set NumPy's random seed
 torch.manual_seed(seed)  # Set PyTorch's CPU random seed
-torch.cuda.manual_seed(seed)  # Set PyTorch's GPU random seed (if using CUDA)
-torch.cuda.manual_seed_all(seed)  # For all GPUs if you have multiple
+torch.cuda.manual_seed(seed)  # Set PyTorch's GPU random seed 
+torch.cuda.manual_seed_all(seed)  # For all GPUs if multiple - didn't apply here
 context_length = 512
 
 
-
+# gpu compatible with FrostByte
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 print(f"device: {device}")
 
