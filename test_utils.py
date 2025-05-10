@@ -6,7 +6,8 @@ from tqdm.auto import tqdm
 import evaluate
 from sklearn.metrics import f1_score, precision_score, recall_score
 import numpy as np
-
+from pathlib import Path
+import csv
 
 def update_results(results, f1, acc, loss, prec, recall, test_type):
     
@@ -27,21 +28,27 @@ def update_results(results, f1, acc, loss, prec, recall, test_type):
 
 
 def save_results(results, hyper_params_str, title):
-    with open('results/' + title + '_results.txt', 'w') as f:
-        f.write(title + '!\nParams:\n' + hyper_params_str + '\n\n')
-        
+
+    file_path = Path('results/' + title + '_metrics.csv')
+    
+    with open(file_path, 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=['epoch', 'set', 'loss', 'accuracy', 'precision', 'recall', 'f1'])
+        writer.writeheader()
         for test_type in ['train', 'val']:
-            f.write(f'{test_type} performance: \n')
             for i, (f1, acc, loss, prec, recall) in enumerate(
                     zip(results[f'f1_{test_type}'], 
                     results[f'acc_{test_type}'], 
                     results[f'loss_{test_type}'], 
                     results[f'prec_{test_type}'], 
                     results[f'recall_{test_type}']), 1):
-                f.write(f"EPOCH {i}: Loss: {loss} Accuracy: {acc['accuracy']} Precision: {prec} Recall: {recall} F1: {f1}\n\n")
+                writer.writerow({'epoch': i, 'set': test_type, 'loss': loss, 'accuracy': acc['accuracy'], 'precision': prec, 'recall': recall, 'f1': f1})
+        # finish with test performance
+        writer.writerow({'epoch': None, 'set': 'test', 'loss': results['loss_test'], 'accuracy': results['acc_test']['accuracy'], 'precision': results['prec_test'], 'recall': results['recall_test'], 'f1': results['f1_test']})
+
+    # save hyperparams as a string
+    with open('results/' + title + '_params.txt', 'w') as f:
+        f.write(title + '\nParams:\n' + hyper_params_str + '\n\n')
         
-        f.write(f'test performance: \n')   
-        f.write(f"Loss: {results['loss_test']} Accuracy: {results['acc_test']['accuracy']} Precision: {results['prec_test']} Recall: {results['recall_test']} F1: {results['f1_test']}\n")
         
 
 def evaluate_model(model, dataloader, device, loss_fn):
