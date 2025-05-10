@@ -27,13 +27,13 @@ if __name__ in '__main__':
     """Model & training hyper parameters"""
     
     context_length = 512
-    d_model = 128
-    num_heads = 4
-    num_hidden_layers = 4
-    d_hidden = 512
-    num_encoders = 4
-    num_epochs = 10
-    mod_name = 'mod_7'
+    d_model = 512
+    num_heads = 8
+    num_hidden_layers = 2
+    d_hidden = 2048
+    num_encoders = 8
+    num_epochs = 8
+    mod_name = 'test_1'
 
     lr = 2e-5
     pdrop = 0.5
@@ -94,7 +94,7 @@ if __name__ in '__main__':
     results = train(
         model=model,
         mod_name=mod_name,
-        save_model=True,
+        save_model=False,
         train_dataloader=train_dataloader,
         val_dataloader=val_dataloader,         
         num_epochs=num_epochs,

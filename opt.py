@@ -38,7 +38,7 @@ df=pd.read_csv(Path('data/all_posts.csv'))
  
 
 print('splitting into train and test sets')
-train_df, temp = train_test_split(df, test_size=0.3, stratify=df['affiliation'])
+train_df, temp = train_test_split(df, test_size=0.2, stratify=df['affiliation'])
 val_df, test_df = train_test_split(temp, test_size=0.5, stratify=temp['affiliation'])
 
 print('creating datasets..')
@@ -65,22 +65,7 @@ def objective(trial):
     lr = trial.suggest_float('lr', 1e-5, 1e-3, log=True)
     pdrop = trial.suggest_float('p_drop',0.2, 0.5)
     
-    model_hyperparams = {
-        'context_length': context_length,
-        'd_model': d_model,
-        'num_heads': num_heads,
-        'num_hidden_layers': num_hidden_layers,
-        'd_hidden': d_hidden,
-        'num_encoders': num_encoders, 
-        'lr': lr,
-        'dropout': pdrop,
-        'batch_size': batch_size,
-        'num_epochs': num_epochs
-    }
-    
-    model_hyperparams_str = '\n'.join(f'{k}: {v}' for k, v in model_hyperparams.items())
-    print(model_hyperparams_str)
-
+     
     
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)

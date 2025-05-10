@@ -1,5 +1,5 @@
 #! /bin/sh
-#SBATCH --partition gpu-a100-q
+#SBATCH --partition gpu-a5000-q
 #SBATCH --gres=gpu:1
 #SBATCH --mem=64G
 #SBATCH --output dgpu-%j-main.out
