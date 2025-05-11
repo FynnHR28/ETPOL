@@ -125,7 +125,7 @@ def train(model, train_dataloader, val_dataloader, num_epochs,
     model.to(device)
      
     model.train()
-    best_val_loss = float('inf')
+    #est_val_loss = float('inf')
     patience = 0
     for epoch in range(num_epochs):
         print(f"EPOCH {epoch}")
@@ -155,13 +155,13 @@ def train(model, train_dataloader, val_dataloader, num_epochs,
         
         f1_val, acc_val, loss_val, prec_val, recall_val = evaluate_model(model, val_dataloader, device, loss_fn)
         
-        if loss_val > best_val_loss:
-            patience += 1
-            print('stopping training early! (val loss got worse twice in a row)')
-            if patience > 1: break
-        else:
-            best_val_loss = loss_val
-            patience = 0
+        # if loss_val > best_val_loss:
+        #     patience += 1
+        #     print('stopping training early! (val loss got worse twice in a row)')
+        #     if patience > 1: break
+        # else:
+        #     best_val_loss = loss_val
+        #     patience = 0
         
         results = update_results(results, f1_val, acc_val, loss_val, prec_val, recall_val, 'val')
         

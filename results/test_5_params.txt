@@ -1,0 +1,13 @@
+test_5
+Params:
+context_length: 512
+d_model: 256
+num_heads: 8
+num_hidden_layers: 2
+d_hidden: 1024
+num_encoders: 8
+lr: 2e-05
+dropout: 0.3099236390195026
+batch_size: 16
+num_epochs: 10
+
