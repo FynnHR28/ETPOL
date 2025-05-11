@@ -21,4 +21,6 @@ guns <- find_thread_urls(
 all_posts <- bind_rows(climate_change, nba, guns)
 
 
-write.csv(x=all_posts, file = 'all_posts.csv')
+
+write.csv(x = all_posts, file = "scraped_posts.csv", 
+          fileEncoding = "UTF-8", row.names = FALSE)

@@ -1,5 +1,4 @@
 from tokenizers import (
-    decoders,
     models,
     normalizers,
     pre_tokenizers,
@@ -10,6 +9,16 @@ from tokenizers import (
 from pathlib import Path
 import pandas as pd
 from transformers import PreTrainedTokenizerFast
+
+
+
+
+
+
+
+
+
+
 
 # lets get the data in here:
 df = pd.read_csv(Path('data/all_posts.csv'))

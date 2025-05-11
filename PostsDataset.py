@@ -1,6 +1,25 @@
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
+import re
+from string import printable
+
+# helpful function to apply clean any clean up model input data consistently 
+def clean_text(text):
+    # normalize to lowercase -> more efficient tokenization
+    text = text.lower()
+    # remove anything that is not alphanumeric or punctuation
+    re.sub(r'[^\x20-\x7E]', '', text)
+    text = re.sub(r'[^a-z0-9\s.,:;!?()\'"-]', '', text)
+    text = text.replace('amp;', '&')
+    text = re.sub(r'\s{2,}', ' ', text)
+    text = re.sub(r'\n', ' ', text)
+    # remove leading/trailing whitespace
+    text = text.strip()
+    text = ''.join(char for char in text if char in printable)
+    
+    return text
+
 
 # following https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 class PostsDataset(Dataset):
