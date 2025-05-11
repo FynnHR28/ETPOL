@@ -27,17 +27,17 @@ if __name__ in '__main__':
     """Model & training hyper parameters"""
     
     context_length = 512
-    d_model = 512
-    num_heads = 8
-    num_hidden_layers = 2
+    d_model = 768
+    num_heads = 16
+    num_hidden_layers = 4
     d_hidden = 2048
-    num_encoders = 8
-    num_epochs = 8
-    mod_name = 'test_1'
+    num_encoders = 7 
+    num_epochs = 10
+    mod_name = 'etpol'
 
-    lr = 2e-5
-    pdrop = 0.5
-    batch_size = 16
+    lr =  6.871199163253075e-05
+    pdrop = 0.3099236390195026
+    batch_size = 32
     
     model = ETPOL(
         vocab_size=20000,
@@ -94,7 +94,7 @@ if __name__ in '__main__':
     results = train(
         model=model,
         mod_name=mod_name,
-        save_model=False,
+        save_model=True,
         train_dataloader=train_dataloader,
         val_dataloader=val_dataloader,         
         num_epochs=num_epochs,
