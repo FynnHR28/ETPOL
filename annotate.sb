@@ -1,0 +1,10 @@
+#! /bin/sh
+#SBATCH --partition gpu-a5000-q
+#SBATCH --gres=gpu:1
+#SBATCH --mem=80G
+#SBATCH --output annotate.out
+#SBATCH --error annotate.err
+
+source ~/venv/ETPOL/bin/activate
+srun python3 annotate.py
+wait
