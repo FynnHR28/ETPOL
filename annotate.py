@@ -55,7 +55,7 @@ def get_pol(content):
 model.to(device)
 posts = pd.read_csv('./scrape/subreddits_cleaned.csv')
 
-posts['content'] = posts['content'].fillna('').astype(str)
+
 print('starting to label')
 # loop is working, now hopefully i can to device this shit on the gpu
 posts['affiliation'] = posts['content'].map(get_pol)

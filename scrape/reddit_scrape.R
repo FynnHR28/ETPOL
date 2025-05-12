@@ -17,8 +17,21 @@ nba <- find_thread_urls(
 guns <- find_thread_urls(
   subreddit = 'guns', sort_by = "new", period = 'day')
 
+repub <- find_thread_urls(
+  subreddit = 'Republican', sort_by = "new", period = 'day')
+
+dems <- find_thread_urls(
+  subreddit = 'democrats', sort_by = "new", period = 'day')
+
+snl <- find_thread_urls(
+  subreddit = 'saturdaynightlive', sort_by = "new", period = 'day')
+
+abortion <- find_thread_urls(
+  subreddit = 'abortion', sort_by = "new", period = 'day')
+
+
 # save to each college's posts to one r data file
-all_posts <- bind_rows(climate_change, nba, guns)
+all_posts <- bind_rows(climate_change, nba, guns, repub, dems, snl, abortion)
 
 
 
