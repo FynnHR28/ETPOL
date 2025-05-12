@@ -37,7 +37,7 @@ model.load_state_dict(torch.load('./models/etpol.pth'))
 print('model state loaded successfully')
 
 
-
+# same label map used during training
 reverse_label_map = {1: 'left', 0: 'right'}
 
 def get_pol(content):
