@@ -3,3 +3,5 @@ models/
 __pycache__/
 
 optuna.err
+
+annotate_subs.ipynb
