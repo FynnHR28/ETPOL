@@ -9,6 +9,7 @@ import numpy as np
 from pathlib import Path
 import csv
 
+# handy method to update the results for each metric within the training loop
 def update_results(results, f1, acc, loss, prec, recall, test_type):
     
     if test_type == 'test':
@@ -26,7 +27,7 @@ def update_results(results, f1, acc, loss, prec, recall, test_type):
     
     return results
 
-
+# save the results of training to two files: a csv with per epoch metric performance, and a txt file with the parameter configuration for later reference
 def save_results(results, hyper_params_str, title):
 
     file_path = Path('results/' + title + '_metrics.csv')
@@ -67,11 +68,13 @@ def evaluate_model(model, dataloader, device, loss_fn):
             total_loss += loss.item()
 
         predictions = torch.argmax(logits, dim=-1)
-        # Flatten predictions and labels
+        # Flatten predictions and labels 
         predictions = predictions.view(-1).detach().cpu().numpy()  # Shape: [batch_size * seq_len]
         labels = labels.view(-1).detach().cpu().numpy()  # Shape: [batch_size * seq_len]
 
         metric.add_batch(predictions=predictions, references=labels)
+    
+    # compute all metric
     # average = 'micro' uses a global count of the total TPs, FNs and FPs.
     avg_loss = total_loss / len(dataloader)
     f1 = f1_score(y_true=labels, y_pred=predictions, average='micro')
@@ -91,6 +94,7 @@ def train(model, train_dataloader, val_dataloader, num_epochs,
     # often results in better generalization than SGD
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
 
+    # results dictionary initialized
     results = {
         'f1_train': [],
         'acc_train': [],
@@ -139,15 +143,18 @@ def train(model, train_dataloader, val_dataloader, num_epochs,
             logits = model(input_ids)
             
             loss = loss_fn(logits, labels)
-            epoch_loss.append(loss.detach() )
+            # update epoch loss
+            epoch_loss.append(loss.detach())
             
+            # backprop
             loss.backward()
 
             optimizer.step()
+            # update learning rate
             lr_scheduler.step()
             optimizer.zero_grad()
         
-        
+        # calculate all metrics
         avg_train_loss = np.mean([loss.cpu().item() for loss in epoch_loss])
         # f1, acc, avg_loss, prec, recall in that order
         f1_train, acc_train, _, prec_train, recall_train = evaluate_model(model, train_dataloader, device, loss_fn)
@@ -155,21 +162,25 @@ def train(model, train_dataloader, val_dataloader, num_epochs,
         
         f1_val, acc_val, loss_val, prec_val, recall_val = evaluate_model(model, val_dataloader, device, loss_fn)
         
-        # if loss_val > best_val_loss:
-        #     patience += 1
-        #     print('stopping training early! (val loss got worse twice in a row)')
-        #     if patience > 1: break
-        # else:
-        #     best_val_loss = loss_val
-        #     patience = 0
+        # early stopping mechanism, used for efficiency and stopping poor configurations early 
+        if loss_val > best_val_loss:
+            patience += 1
+            if patience > 1: 
+                print('stopping training early! (val loss got worse twice in a row)')
+                break
+        else:
+            best_val_loss = loss_val
+            patience = 0
         
+        # update the results dictionary and print 
         results = update_results(results, f1_val, acc_val, loss_val, prec_val, recall_val, 'val')
-        
         print(results)
 
+    # if I wanted to save the model (like for the best config I found) this saves its state to a .pth file
     if save_model:
         torch.save(model.state_dict(), 'models/' + mod_name + '.pth')
     
+    # the results dictionary is returned at the end of training, and it is saved in the main.py script!
     return results
     
     

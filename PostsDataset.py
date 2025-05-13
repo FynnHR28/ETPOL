@@ -21,19 +21,21 @@ def clean_text(text):
     return text
 
 
-# following https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
+# following https://pytorch.org/tutorials/beginner/basics/data_tutorial.html for creating a custom dataset to help with tokenization
 class PostsDataset(Dataset):
     def __init__(self, df, tokenizer, context_length):
         self.df = df
         self.tokenizer = tokenizer
         self.context_length = context_length
         mapping_dict = {'left': 1, 'right': 0}
+        # convert string labels to numerical labels based on mapping dict
         self.df['affiliation'] = self.df['affiliation'].map(mapping_dict)
     
     def __len__(self):
         return len(self.df)
     
     def __getitem__(self, idx):
+        # extract the idx row and tokenize it, returning torch tensors
         content = self.df.iloc[idx]['content']
         label = self.df.iloc[idx]['affiliation']
         tokenized = self.tokenizer(
@@ -44,6 +46,7 @@ class PostsDataset(Dataset):
             return_tensors='pt'
         )
         
+        # returning in the form of a dictionary helps with ease of training
         return {
             # squeeze to get rid of the default batch dimension added by tokenizer
             'input_ids': tokenized['input_ids'].squeeze(0),
