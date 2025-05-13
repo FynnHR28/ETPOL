@@ -11,15 +11,6 @@ import pandas as pd
 from transformers import PreTrainedTokenizerFast
 
 
-
-
-
-
-
-
-
-
-
 # lets get the data in here:
 df = pd.read_csv(Path('data/all_posts.csv'))
 # convert to list of strings, ensuring compatibility with tokenizer trainer
@@ -29,6 +20,7 @@ training_corpus = df['content'].tolist()
 # building a WordPiece tokenizer from scratch based on: https://huggingface.co/learn/llm-course/en/chapter6/8
 tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
 
+# add normalization protocol
 tokenizer.normalizer = normalizers.Sequence(
     [normalizers.NFD(), normalizers.Lowercase(), normalizers.StripAccents()]
 )
@@ -37,10 +29,13 @@ tokenizer.pre_tokenizer = pre_tokenizers.Sequence(
     [pre_tokenizers.WhitespaceSplit(), pre_tokenizers.Punctuation()]
 )
 
+# the only special tokens needed
 special_tokens = ["[UNK]", "[PAD]", "[CLS]"]
 
+# initialize trainer object
 trainer = trainers.WordPieceTrainer(vocab_size=20000, special_tokens=special_tokens)
 
+# train the tokenizer on the dataset
 tokenizer.train_from_iterator(training_corpus, trainer=trainer)
 
 # post-processing, adding cls token to start of each input sequence
@@ -52,6 +47,7 @@ tokenizer.post_processor = processors.TemplateProcessing(
     special_tokens=[("[CLS]", cls_token_id)],
 )
 
+# wrapping tokenizer in this hugging face class lets you save it easily
 hf_tokenizer = PreTrainedTokenizerFast(
     tokenizer_object = tokenizer,
     unk_token="[UNK]",
@@ -59,5 +55,5 @@ hf_tokenizer = PreTrainedTokenizerFast(
     cls_token="[CLS]"
 )
 
-
+# saved to the specified directory!
 hf_tokenizer.save_pretrained('wp_tokenizer')
