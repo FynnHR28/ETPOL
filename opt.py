@@ -13,7 +13,8 @@ import numpy as np
 import optuna
 from datetime import date, datetime
 
-
+"""THIS SCRIPT CODE IS VERY SIMILAR TO main.py EXCEPT IT HAS THE OBJECTIVE FUNCTION AND DOES NOT SAVE ANY MODELS"""
+# ensuring reproducibility
 seed = 121
 random.seed(seed)  # Set Python's random seed
 np.random.seed(seed)  # Set NumPy's random seed
@@ -46,14 +47,16 @@ train_dataset = PostsDataset(df=train_df, tokenizer=tokenizer, context_length=co
 val_dataset = PostsDataset(df=val_df, tokenizer=tokenizer, context_length=context_length)
 
 
+# the optuna objective function
 def objective(trial):
     print("NEXT TRIAL")
     start_time = datetime.now()
+    # factors to hold constant across each trial
     num_epochs = 6
     context_length = 512
     loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
     
-     
+    # here we have all the params I define a search space for
     batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
     num_heads = trial.suggest_categorical('num_heads', [2, 4, 6, 8, 16])
     d_model = trial.suggest_int('d_model', num_heads * 8, num_heads * 64, step=num_heads * 8)
@@ -66,10 +69,11 @@ def objective(trial):
     pdrop = trial.suggest_float('p_drop',0.2, 0.5)
     
      
-    
+    # we just use the train and val sets here
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
     
+    # init model with the chosen config
     model = ETPOL(
         vocab_size=20000,
         context_length=context_length,
@@ -81,7 +85,7 @@ def objective(trial):
         pdrop=pdrop 
     )
 
-     
+    # train
     results = train(
         model=model,
         mod_name="opt",
@@ -102,14 +106,19 @@ def objective(trial):
     trial.set_user_attr("val_loss", val_loss)
     trial.set_user_attr("val_acc", val_acc)
     print(f'TRIAL TOOK: {datetime.now() - start_time}')
+    # the metric to be maximized must be returned at the end of the objective function
     return val_acc
 
 
 
 
 print("STARTING STUDY")
+# create the study object, ensuring that it aims to maximize the objective
 study = optuna.create_study(study_name = 'ETPOL hyperparameter optimization', direction="maximize")
+# 20 trials long
 study.optimize(objective, n_trials=20)
+
+# print the results of the objective with the best configuration after the study!
 print("Best trial:")
 best_trial = study.best_trial
 
